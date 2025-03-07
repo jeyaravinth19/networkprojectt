@@ -1,0 +1,31 @@
+---
+- name: Deploy Docker container on EC2
+  hosts: Test_Server
+  become: true
+  tasks:
+
+    - name: Add the ec2-user to the docker group so that Docker commands can run without using sudo
+      user:
+        name: ec2-user
+        groups: docker
+        append: yes
+    
+    - name: Building docker file
+      command: docker build -t nginx:latest .
+
+    - name: Stop and Remove exising Docker application (if it exists)
+      shell: |
+        docker stop my-web-app || true
+        docker rm my-web-app || true
+      ignore_errors: yes
+
+    - name: Running docker file
+      command: docker run -dit --name my-web-app -p 80:80 nginx:latest  
+
+    - name: Checking Docker Application is running
+      command: docker ps
+      register: container_info
+
+    - name: Output container status
+      debug:
+        msg: "Container status: {{ container_info.stdout }}"

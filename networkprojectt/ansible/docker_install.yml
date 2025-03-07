@@ -1,0 +1,31 @@
+---
+- name: Install Docker on Amazon Linux
+  hosts: Test_Server  
+  become: true  
+  tasks:
+    - name: Update the instance to install updated packages
+      yum:
+        name: "*"
+        state: latest
+
+    - name: Install Docker
+      yum:
+        name: docker
+        state: present
+
+    
+
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Verify Docker installation
+      command: docker --version
+      register: docker_version
+      changed_when: false
+
+    - name: Show Docker version
+      debug:
+        msg: "Docker version: {{ docker_version.stdout }}"
